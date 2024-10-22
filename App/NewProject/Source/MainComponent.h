@@ -7,7 +7,10 @@
     This component lives inside our window, and this is where you should put all
     your controls and content.
 */
-class MainComponent  : public juce::AudioAppComponent, public juce::ChangeListener
+class MainComponent  : 
+    public juce::AudioAppComponent,
+    public juce::ChangeListener,
+    private juce::Timer
 {
 public:
     //==============================================================================
@@ -21,6 +24,7 @@ public:
     void getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill) override;
     void releaseResources() override;
     void changeListenerCallback(juce::ChangeBroadcaster* source) override;
+	void timerCallback() override;
 
 	void setPositionLabel(double positionData[]);
     

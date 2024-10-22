@@ -39,6 +39,8 @@ MainComponent::MainComponent() : state(Stopped)
     formatManager.registerFormat(new juce::MP3AudioFormat(), true);
     
     transportSource.addChangeListener(this);
+
+	setAudioChannels(0, 2);
 }
 
 MainComponent::~MainComponent()
@@ -72,14 +74,19 @@ void MainComponent::changeListenerCallback(juce::ChangeBroadcaster* source)
     }
 }
 
+void MainComponent::timerCallback()
+{
+	setPositionLabel(positionData);
+}
+
 //This function will set the positionData variable so that it contains the current position and total length
 //in minutes and seconds
 void MainComponent::setPositionLabel(double positionData[])
 {
 		positionData[0] = readerSource ? transportSource.getCurrentPosition() : 0;
 		positionData[1] = readerSource ? transportSource.getLengthInSeconds() : 0;
-		sprintf(positionString, "%.2f / %.2f", positionData[0], positionData[1]);
-    	positionLabel.setText(positionString, juce::dontSendNotification);
+		sprintf(positionString, "%.1f / %.1f", positionData[0], positionData[1]);
+    	positionLabel.setText(positionString, juce::sendNotification);
 }
 
 void MainComponent::changeState(TransportState newState)
@@ -108,11 +115,13 @@ void MainComponent::changeState(TransportState newState)
             case Playing:
                 stopButton.setEnabled(true);
                 setPositionLabel(positionData);
+                startTimerHz(40);
                 break;
 
             //Triggered by Stop button
             case Stopping:
                 transportSource.stop();
+                stopTimer();
                 break;
         }
     }
@@ -164,7 +173,6 @@ void MainComponent::openButtonClicked()
 					trackTitle.setText(file.getFileNameWithoutExtension(), juce::dontSendNotification);
                     readerSource.reset(newSource.release());
 					setPositionLabel(positionData);
-
                 }
                 else {
 					juce::AlertWindow::showMessageBoxAsync(juce::AlertWindow::WarningIcon,
